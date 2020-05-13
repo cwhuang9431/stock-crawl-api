@@ -19,6 +19,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 新增所有都可以跨域存取
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  next();
+})
+
 app.use('/', indexRouter);
 app.use('/revenue', revenueRouter);
 
@@ -26,11 +33,6 @@ app.use('/revenue', revenueRouter);
 app.use(function (req, res, next) {
   next(createError(404));
 });
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-  next();
-})
 
 // error handler
 app.use(function (err, req, res, next) {
