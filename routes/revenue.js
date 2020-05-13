@@ -4,19 +4,21 @@ const request = require("request");
 const cheerio = require("cheerio");
 
 router.get('/', async function (req, res, next) {
+  const code = req.query.code
   try {
-    var data = await getRevenue();
+    var data = await getRevenue(code);
     res.json(data);
   } catch (err) {
     next(err);
   }
 });
 
-function getRevenue() {
+function getRevenue(code) {
+  if (code === '') throw new Error("code not found");
   return new Promise((resolve, reject) => {
     var options = {
       'method': 'GET',
-      'url': 'http://jdata.yuanta.com.tw/z/zc/zch/zch_3008.djhtm',
+      'url': `http://jdata.yuanta.com.tw/z/zc/zch/zch_${code}.djhtm`,
       'headers': {
       }
     };
