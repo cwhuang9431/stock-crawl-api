@@ -6,14 +6,14 @@ const cheerio = require("cheerio");
 router.get('/', async function (req, res, next) {
   const code = req.query.code
   try {
-    var data = await getRevenue(code);
+    var data = await getData(code);
     res.json(data);
   } catch (err) {
     next(err);
   }
 });
 
-function getRevenue(code) {
+function getData(code) {
   if (code === '') throw new Error("code not found");
   return new Promise((resolve, reject) => {
     var options = {
@@ -28,7 +28,7 @@ function getRevenue(code) {
       var data = $("#oMainTable tr").slice(6).map((index, obj) => {
         return {
           date: $(obj).find('td').eq(0).text().trim(),
-          revenue: parseInt($(obj).find('td').eq(1).text().trim().replace(/,/g, '')),
+          revenue: parseFloat($(obj).find('td').eq(1).text().trim().replace(/,/g, '')),
           revenue_change_m: parseFloat($(obj).find('td').eq(2).text().trim().replace(/,/g, '')),
           revenue_pre_y: parseFloat($(obj).find('td').eq(3).text().trim().replace(/,/g, '')),
           revenue_pre_change_y: parseFloat($(obj).find('td').eq(4).text().trim().replace(/,/g, '')),
