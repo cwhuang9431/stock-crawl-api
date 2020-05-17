@@ -15,6 +15,7 @@ var frRouter = require('./routes/fr');
 var cfsqRouter = require('./routes/cfsq');
 var cfsRouter = require('./routes/cfs');
 var dividendRouter = require('./routes/dividend');
+var stockPriceRouter = require('./routes/stockPrice');
 
 var app = express();
 
@@ -46,6 +47,7 @@ app.use('/fr', frRouter);
 app.use('/cfsq', cfsqRouter);
 app.use('/cfs', cfsRouter);
 app.use('/dividend', dividendRouter);
+app.use('/stockPrice', stockPriceRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
