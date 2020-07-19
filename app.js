@@ -3,6 +3,30 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var swaggerJSDoc = require('swagger-jsdoc');
+var swaggerUi = require('swagger-ui-express');
+
+const APPError = require("./helper/AppError");
+
+// Extended: https://swagger.io/specification/#infoObject
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      version: "1.0.0",
+      title: "Stock API",
+      description: "各式有關股票、投資的api",
+      contact: {
+        "name": "程式農夫",
+        "url": "https://cwhuang9431.github.io/",
+        "email": "cwhuang9431@gmail.com"
+      },
+      servers: ["https://crawl-api-server.herokuapp.com/"]
+    }
+  },
+  apis: ['app.js', './routes/*.js']
+};
+
+const swaggerDocs = swaggerJSDoc(swaggerOptions);
 
 var indexRouter = require('./routes/index');
 var revenueRouter = require('./routes/revenue');
@@ -37,6 +61,7 @@ app.use(function (req, res, next) {
 })
 
 app.use('/', indexRouter);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs)); // api doc 
 app.use('/revenue', revenueRouter);
 app.use('/isq', isqRouter);
 app.use('/is', isRouter);
@@ -56,13 +81,65 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  res.status(err.status).json({
+    message: err.message,
+    statusCode: err.status
+  });
 });
 
+
+/**
+ * @swagger
+ * definitions:
+ *   Statements:
+ *     type: object
+ *     properties:
+ *       message:
+ *         type: string
+ *         description: http status code 描述
+ *       statusCode:
+ *         type: string
+ *         description: http status code
+ *       content:
+ *         type: object
+ *         properties:
+ *           stockName:
+ *             type: string
+ *             description: 股票名稱
+ *           stockCode:
+ *             type: string
+ *             description: 股票代號
+ *           data:
+ *             type: array
+ *             items:
+ *               type: object
+ *               properties:
+ *                 name: 
+ *                   type: string
+ *                   description: 欄位名稱
+ *                 value1: 
+ *                   type: string
+ *                   description: 第N欄資料
+ *                 value2: 
+ *                   type: string
+ *                   description: 第N欄資料
+ *                 value3: 
+ *                   type: string
+ *                   description: 第N欄資料
+ *                 value4: 
+ *                   type: string
+ *                   description: 第N欄資料
+ *                 value5: 
+ *                   type: string
+ *                   description: 第N欄資料
+ *                 value6: 
+ *                   type: string
+ *                   description: 第N欄資料
+ *                 value7: 
+ *                   type: string
+ *                   description: 第N欄資料
+ *                 value8: 
+ *                   type: string
+ *                   description: 第N欄資料
+ */
 module.exports = app;
