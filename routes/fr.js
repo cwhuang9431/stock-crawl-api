@@ -103,31 +103,31 @@ function getData(code) {
       } catch (err) {
         reject(new CustomError(404, "抓取失敗"));
       }
-      var data = $("#oMainTable tr").slice(1).map((index, obj) => {
+      var data = $("#oMainTable .table-row").slice(1).map((index, obj) => {
         var strValue = ["期別", "種類"];
-        if (strValue.includes($(obj).find('td').eq(0).text().trim())) {
+        if (strValue.includes($(obj).find('span').eq(0).text().trim())) {
           return {
-            name: $(obj).find('td').eq(0).text().trim(),
-            value1: $(obj).find('td').eq(1).text().trim(),
-            value2: $(obj).find('td').eq(2).text().trim(),
-            value3: $(obj).find('td').eq(3).text().trim(),
-            value4: $(obj).find('td').eq(4).text().trim(),
-            value5: $(obj).find('td').eq(5).text().trim(),
-            value6: $(obj).find('td').eq(6).text().trim(),
-            value7: $(obj).find('td').eq(7).text().trim(),
-            value8: $(obj).find('td').eq(8).text().trim(),
+            name: $(obj).find('span').eq(0).text().trim(),
+            value1: $(obj).find('span').eq(1).text().trim(),
+            value2: $(obj).find('span').eq(2).text().trim(),
+            value3: $(obj).find('span').eq(3).text().trim(),
+            value4: $(obj).find('span').eq(4).text().trim(),
+            value5: $(obj).find('span').eq(5).text().trim(),
+            value6: $(obj).find('span').eq(6).text().trim(),
+            value7: $(obj).find('span').eq(7).text().trim(),
+            value8: $(obj).find('span').eq(8).text().trim(),
           }
         } else {
           return {
-            name: $(obj).find('td').eq(0).text().trim(),
-            value1: parseFloat($(obj).find('td').eq(1).text().trim().replace(/,/g, '')),
-            value2: parseFloat($(obj).find('td').eq(2).text().trim().replace(/,/g, '')),
-            value3: parseFloat($(obj).find('td').eq(3).text().trim().replace(/,/g, '')),
-            value4: parseFloat($(obj).find('td').eq(4).text().trim().replace(/,/g, '')),
-            value5: parseFloat($(obj).find('td').eq(5).text().trim().replace(/,/g, '')),
-            value6: parseFloat($(obj).find('td').eq(6).text().trim().replace(/,/g, '')),
-            value7: parseFloat($(obj).find('td').eq(7).text().trim().replace(/,/g, '')),
-            value8: parseFloat($(obj).find('td').eq(8).text().trim().replace(/,/g, '')),
+            name: $(obj).find('span').eq(0).text().trim(),
+            value1: parseFloat($(obj).find('span').eq(1).text().trim().replace(/,/g, '')),
+            value2: parseFloat($(obj).find('span').eq(2).text().trim().replace(/,/g, '')),
+            value3: parseFloat($(obj).find('span').eq(3).text().trim().replace(/,/g, '')),
+            value4: parseFloat($(obj).find('span').eq(4).text().trim().replace(/,/g, '')),
+            value5: parseFloat($(obj).find('span').eq(5).text().trim().replace(/,/g, '')),
+            value6: parseFloat($(obj).find('span').eq(6).text().trim().replace(/,/g, '')),
+            value7: parseFloat($(obj).find('span').eq(7).text().trim().replace(/,/g, '')),
+            value8: parseFloat($(obj).find('span').eq(8).text().trim().replace(/,/g, '')),
           }
         }
       }).get();
