@@ -99,7 +99,7 @@ function getData(code) {
       } catch (err) {
         reject(new CustomError(404, "抓取失敗"));
       }
-      var data = $("#oMainTable .table-row").slice(1).map((index, obj) => {
+      var data = $("#oMainTable .table-row").map((index, obj) => {
         var strValue = ["期別", "種類"];
         if (strValue.includes($(obj).find('span').eq(0).text().trim())) {
           return {
