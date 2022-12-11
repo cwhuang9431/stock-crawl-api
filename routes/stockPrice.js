@@ -102,7 +102,8 @@ function getData(code) {
     var options = {
       'method': 'GET',
       'url': `https://djinfo.cathaysec.com.tw/Z/ZC/ZCS/ZCS.DJHTM?A=${code}`,
-      encoding: null
+      encoding: null,
+      timeout: 5000
     };
     request(options, function (error, response, body) {
       if (error || body === undefined) {
@@ -125,7 +126,8 @@ function getPrice(code) {
     var options = {
       'method': 'GET',
       'url': `https://djinfo.cathaysec.com.tw/z/GetStkRTDataJSON.djjson?B=${code}`,
-      encoding: null
+      encoding: null,
+      timeout: 5000
     }
     request(options, function (error, response, body) {
       if (error || body === undefined) {
