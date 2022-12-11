@@ -3,6 +3,7 @@ var router = express.Router();
 const request = require("request");
 const cheerio = require("cheerio");
 const CustomError = require("../helper/AppError");
+const iconv = require('iconv-lite');
 
 /**
  * @swagger
@@ -65,17 +66,27 @@ const CustomError = require("../helper/AppError");
  *      '400':
  *        description: 參數錯誤
  *      '404':
- *        description: 抓取失敗
- */
+ *        description: 抓取失敗 */
 router.get('/', async function (req, res, next) {
   const code = req.query.code
   try {
     var data = await getData(code);
+    var priceData = await getPrice(code);
     res.json(
       {
         message: "success",
         statusCode: "200",
-        content: data
+        content: {
+          stockName: priceData.Name,
+          stockCode: priceData.ID,
+          data: {
+            industry: data.industry,
+            price: parseFloat(priceData.P),
+            price_last: parseFloat(priceData.PC),
+            price_y_max: 0,
+            price_y_min: 0
+          }
+        }
       }
     );
   } catch (err) {
@@ -89,37 +100,41 @@ function getData(code) {
       reject(new CustomError(400, "參數錯誤"));
     }
     var options = {
-      'method': 'POST',
-      'url': `https://pchome.megatime.com.tw/stock/sid${code}.html`,
-      'headers': {
-      },
-      'form': {
-        'is_check': '1'
-      }
+      'method': 'GET',
+      'url': `https://djinfo.cathaysec.com.tw/Z/ZC/ZCS/ZCS.DJHTM?A=${code}`,
+      encoding: null
     };
     request(options, function (error, response, body) {
       if (error || body === undefined) {
         reject(new CustomError(404, "抓取失敗"));
         return;
       }
+      body = iconv.decode(body, "big5");
       var $ = cheerio.load(body);
-      var name = $(".corp-name").text().trim();
-      var re = new RegExp(/(.*)\((.*)\)/); // 尋找股票名稱與股票代號
-      let stockCode, stockName;
-      try {
-        stockName = name.match(re)[1].replace("　", "").trim();
-        stockCode = name.match(re)[2];
-      } catch (err) {
-        reject(new CustomError(404, "抓取失敗"));
-      }
-      var industry = $("span.txt").text().trim().replace(/\n/g,",").replace(/[\s]+/g,"");
-      var price = parseFloat($("#stock_info_data_a span:nth-child(1)").text().trim());
-      var price_last = parseFloat($("#stock_info_data_b td:nth-child(10)").text().trim());
-      var price_y_max = parseFloat($("#bttb > table:nth-child(1) > tbody > tr:nth-child(9) > td:nth-child(5)").text().trim());
-      var price_y_min = parseFloat($("#bttb > table:nth-child(1) > tbody > tr:nth-child(9) > td:nth-child(6)").text().trim());
-      resolve({ stockName, stockCode, data: { industry, price, price_last, price_y_max, price_y_min } });
+      var industry = $(".t3t1").text().trim().trim().replace(/\n/g,"");
+      resolve({ industry });
     });
   });
+}
 
+function getPrice(code) {
+  return new Promise((resolve, reject) => {
+    if (code === '' || code === undefined) {
+      reject(new CustomError(400, "參數錯誤"));
+    }
+    var options = {
+      'method': 'GET',
+      'url': `https://djinfo.cathaysec.com.tw/z/GetStkRTDataJSON.djjson?B=${code}`,
+      encoding: null
+    }
+    request(options, function (error, response, body) {
+      if (error || body === undefined) {
+        reject(new CustomError(404, "抓取失敗"));
+        return;
+      }
+      body = iconv.decode(body, "big5");
+      resolve(JSON.parse(body));
+    });
+  });
 }
 module.exports = router;
