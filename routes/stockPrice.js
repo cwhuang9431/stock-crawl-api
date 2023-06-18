@@ -89,7 +89,7 @@ router.get('/', async function (req, res, next) {
  * @swagger
  * /StockPrice/stockDayAll:
  *  get:
- *    description: 取得最新上市櫃股票價格
+ *    description: 取得最新上市股票價格
  *    tags:
  *      - "股票價格"
  *    responses:
@@ -108,6 +108,31 @@ router.get('/stockDayAll', async function (req, res, next) {
     next(err);
   }
 });
+
+/**
+ * @swagger
+ * /StockPrice/stockDayAll_1:
+ *  get:
+ *    description: 取得最新上櫃股票價格
+ *    tags:
+ *      - "股票價格"
+ *    responses:
+ *      200:
+ *        description: A successful response
+ *      '400':
+ *        description: 參數錯誤
+ *      '404':
+ *        description: 抓取失敗
+ */
+router.get('/stockDayAll_1', async function (req, res, next) {
+  try {
+    var data = await getStockDayAll_1();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
 function getData(code) {
   return new Promise((resolve, reject) => {
     if (code === '' || code === undefined) {
@@ -147,6 +172,7 @@ function getData(code) {
   });
 
 }
+
 function getStockDayAll() {
   return new Promise((resolve, reject) => {
     var options = {
@@ -165,4 +191,24 @@ function getStockDayAll() {
   });
 
 }
+
+function getStockDayAll_1() {
+  return new Promise((resolve, reject) => {
+    var options = {
+      'method': 'GET',
+      'url': `https://www.tpex.org.tw/web/stock/aftertrading/DAILY_CLOSE_quotes/stk_quote_result.php?l=zh-tw&o=data%20json`,
+      'headers': {
+      },
+    };
+    request(options, function (error, response, body) {
+      if (error || body === undefined) {
+        reject(new CustomError(404, "抓取失敗"));
+        return;
+      }
+      resolve(JSON.parse(body));
+    });
+  });
+
+}
+
 module.exports = router;
