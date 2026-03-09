@@ -1,10 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const request = require("request");
-const cheerio = require("cheerio");
-const CustomError = require("../helper/AppError");
-
-
+const axios = require('axios');
+const cheerio = require('cheerio');
+const CustomError = require('../helper/AppError');
 
 /**
  * @swagger
@@ -70,16 +68,14 @@ const CustomError = require("../helper/AppError");
  *        description: 抓取失敗
  */
 router.get('/', async function (req, res, next) {
-  const code = req.query.code
+  const code = req.query.code;
   try {
     var data = await getData(code);
-    res.json(
-      {
-        message: "success",
-        statusCode: "200",
-        content: data
-      }
-    );
+    res.json({
+      message: 'success',
+      statusCode: '200',
+      content: data,
+    });
   } catch (err) {
     next(err);
   }
@@ -133,82 +129,82 @@ router.get('/stockDayAll_1', async function (req, res, next) {
   }
 });
 
-function getData(code) {
-  return new Promise((resolve, reject) => {
-    if (code === '' || code === undefined) {
-      reject(new CustomError(400, "參數錯誤"));
+async function getData(code) {
+  if (!code) {
+    throw new CustomError(400, '參數錯誤');
+  }
+
+  try {
+    const response = await axios.post(
+      `https://pchome.megatime.com.tw/stock/sid${code}.html`,
+      new URLSearchParams({
+        is_check: '1',
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
+
+    const body = response.data;
+    const $ = cheerio.load(body);
+
+    const name = $('.corp-name').text().trim();
+    const re = /(.*)\((.*)\)/;
+
+    let stockCode, stockName;
+
+    try {
+      stockName = name.match(re)[1].replace('　', '').trim();
+      stockCode = name.match(re)[2];
+    } catch (err) {
+      throw new CustomError(404, '抓取失敗');
     }
-    var options = {
-      'method': 'POST',
-      'url': `https://pchome.megatime.com.tw/stock/sid${code}.html`,
-      'headers': {
-      },
-      'form': {
-        'is_check': '1'
-      }
-    };
-    request(options, function (error, response, body) {
-      if (error || body === undefined) {
-        reject(new CustomError(404, "抓取失敗"));
-        return;
-      }
-      var $ = cheerio.load(body);
-      var name = $(".corp-name").text().trim();
-      var re = new RegExp(/(.*)\((.*)\)/); // 尋找股票名稱與股票代號
-      let stockCode, stockName;
-      try {
-        stockName = name.match(re)[1].replace("　", "").trim();
-        stockCode = name.match(re)[2];
-      } catch (err) {
-        reject(new CustomError(404, "抓取失敗"));
-      }
-      var industry = $("span.txt").text().trim().replace(/\n/g,",").replace(/[\s]+/g,"");
-      var price = parseFloat($("#stock_info_data_a span:nth-child(1)").text().trim());
-      var price_last = parseFloat($("#stock_info_data_b td:nth-child(10)").text().trim());
-      var price_y_max = parseFloat($("#bttb > table:nth-child(1) > tbody > tr:nth-child(9) > td:nth-child(5)").text().trim());
-      var price_y_min = parseFloat($("#bttb > table:nth-child(1) > tbody > tr:nth-child(9) > td:nth-child(6)").text().trim());
-      resolve({ stockName, stockCode, data: { industry, price, price_last, price_y_max, price_y_min } });
-    });
-  });
 
+    const industry = $('span.txt').text().trim().replace(/\n/g, ',').replace(/[\s]+/g, '');
+
+    const price = parseFloat($('#stock_info_data_a span:nth-child(1)').text().trim());
+    const price_last = parseFloat($('#stock_info_data_b td:nth-child(10)').text().trim());
+    const price_y_max = parseFloat(
+      $('#bttb > table:nth-child(1) > tbody > tr:nth-child(9) > td:nth-child(5)').text().trim()
+    );
+    const price_y_min = parseFloat(
+      $('#bttb > table:nth-child(1) > tbody > tr:nth-child(9) > td:nth-child(6)').text().trim()
+    );
+
+    return {
+      stockName,
+      stockCode,
+      data: { industry, price, price_last, price_y_max, price_y_min },
+    };
+  } catch (err) {
+    throw new CustomError(404, '抓取失敗');
+  }
 }
 
-function getStockDayAll() {
-  return new Promise((resolve, reject) => {
-    var options = {
-      'method': 'GET',
-      'url': `https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data%20json`,
-      'headers': {
-      },
-    };
-    request(options, function (error, response, body) {
-      if (error || body === undefined) {
-        reject(new CustomError(404, "抓取失敗"));
-        return;
-      }
-      resolve(JSON.parse(body));
-    });
-  });
+async function getStockDayAll() {
+  try {
+    const response = await axios.get(
+      'https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data%20json'
+    );
 
+    return response.data;
+  } catch (err) {
+    throw new CustomError(404, '抓取失敗');
+  }
 }
 
-function getStockDayAll_1() {
-  return new Promise((resolve, reject) => {
-    var options = {
-      'method': 'GET',
-      'url': `https://www.tpex.org.tw/web/stock/aftertrading/DAILY_CLOSE_quotes/stk_quote_result.php?l=zh-tw&o=data%20json`,
-      'headers': {
-      },
-    };
-    request(options, function (error, response, body) {
-      if (error || body === undefined) {
-        reject(new CustomError(404, "抓取失敗"));
-        return;
-      }
-      resolve(JSON.parse(body));
-    });
-  });
+async function getStockDayAll_1() {
+  try {
+    const response = await axios.get(
+      'https://www.tpex.org.tw/web/stock/aftertrading/DAILY_CLOSE_quotes/stk_quote_result.php?l=zh-tw&o=data%20json'
+    );
 
+    return response.data;
+  } catch (err) {
+    throw new CustomError(404, '抓取失敗');
+  }
 }
 
 module.exports = router;

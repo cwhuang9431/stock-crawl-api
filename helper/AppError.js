@@ -7,15 +7,15 @@ var CustomError = function (status, message) {
     Error.captureStackTrace(instance, CustomError);
   }
   return instance;
-}
+};
 
 CustomError.prototype = Object.create(Error.prototype, {
   constructor: {
     value: Error,
     enumerable: false,
     writable: true,
-    configurable: true
-  }
+    configurable: true,
+  },
 });
 
 if (Object.setPrototypeOf) {

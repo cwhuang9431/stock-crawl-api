@@ -1,3 +1,6 @@
+// 忽略 url.parse() 所產生的棄用警告 (DeprecationWarning)，此警告來自 swagger-jsdoc 的底層相依套件
+process.noDeprecation = true;
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -5,26 +8,26 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var swaggerJSDoc = require('swagger-jsdoc');
 var swaggerUi = require('swagger-ui-express');
-var timeout = require('connect-timeout')
+var timeout = require('connect-timeout');
 
-const APPError = require("./helper/AppError");
+const APPError = require('./helper/AppError');
 
 // Extended: https://swagger.io/specification/#infoObject
 const swaggerOptions = {
   swaggerDefinition: {
     info: {
-      version: "1.0.0",
-      title: "Stock API",
-      description: "各式有關股票、投資的api",
+      version: '1.0.0',
+      title: 'Stock API',
+      description: '各式有關股票、投資的api',
       contact: {
-        "name": "程式農夫",
-        "url": "https://cwhuang9431.github.io/",
-        "email": "cwhuang9431@gmail.com"
+        name: '程式農夫',
+        url: 'https://cwhuang9431.github.io/',
+        email: 'cwhuang9431@gmail.com',
       },
-      servers: ["https://crawl-api-server.herokuapp.com/"]
-    }
+      servers: ['https://crawl-api-server.herokuapp.com/'],
+    },
   },
-  apis: ['app.js', './routes/*.js']
+  apis: ['app.js', './routes/*.js'],
 };
 
 const swaggerDocs = swaggerJSDoc(swaggerOptions);
@@ -46,9 +49,9 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 
-app.use(timeout('10s'))
+app.use(timeout('10s'));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -60,10 +63,10 @@ app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   next();
-})
+});
 
 app.use('/', indexRouter);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs)); // api doc 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs)); // api doc
 app.use('/revenue', revenueRouter);
 app.use('/isq', isqRouter);
 app.use('/is', isRouter);
@@ -83,12 +86,11 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  res.status(err.status).json({
+  res.status(err.status || 500).json({
     message: err.message,
-    statusCode: err.status
+    statusCode: err.status || 500,
   });
 });
-
 
 /**
  * @swagger
@@ -116,31 +118,31 @@ app.use(function (err, req, res, next) {
  *             items:
  *               type: object
  *               properties:
- *                 name: 
+ *                 name:
  *                   type: string
  *                   description: 欄位名稱
- *                 value1: 
+ *                 value1:
  *                   type: string
  *                   description: 第N欄資料
- *                 value2: 
+ *                 value2:
  *                   type: string
  *                   description: 第N欄資料
- *                 value3: 
+ *                 value3:
  *                   type: string
  *                   description: 第N欄資料
- *                 value4: 
+ *                 value4:
  *                   type: string
  *                   description: 第N欄資料
- *                 value5: 
+ *                 value5:
  *                   type: string
  *                   description: 第N欄資料
- *                 value6: 
+ *                 value6:
  *                   type: string
  *                   description: 第N欄資料
- *                 value7: 
+ *                 value7:
  *                   type: string
  *                   description: 第N欄資料
- *                 value8: 
+ *                 value8:
  *                   type: string
  *                   description: 第N欄資料
  */
