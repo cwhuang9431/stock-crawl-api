@@ -134,6 +134,9 @@ async function getData(code) {
     throw new CustomError(400, '參數錯誤');
   }
 
+  let upstreamStatus = null;
+  let corpNameMatched = null;
+
   try {
     const response = await axios.post(
       `https://pchome.megatime.com.tw/stock/sid${code}.html`,
@@ -147,20 +150,18 @@ async function getData(code) {
       }
     );
 
-    const body = response.data;
-    const $ = cheerio.load(body);
+    upstreamStatus = response.status;
+    const $ = cheerio.load(response.data);
 
     const name = $('.corp-name').text().trim();
-    const re = /(.*)\((.*)\)/;
-
-    let stockCode, stockName;
-
-    try {
-      stockName = name.match(re)[1].replace('　', '').trim();
-      stockCode = name.match(re)[2];
-    } catch (err) {
-      throw new CustomError(404, '抓取失敗');
+    const nameMatch = name.match(/(.*)\((.*)\)/);
+    corpNameMatched = nameMatch !== null;
+    if (!nameMatch) {
+      throw new Error('PChome .corp-name did not match the expected stock name and code format');
     }
+
+    const stockName = nameMatch[1].replace('　', '').trim();
+    const stockCode = nameMatch[2];
 
     const industry = $('span.txt').text().trim().replace(/\n/g, ',').replace(/[\s]+/g, '');
 
@@ -179,6 +180,13 @@ async function getData(code) {
       data: { industry, price, price_last, price_y_max, price_y_min },
     };
   } catch (err) {
+    console.error('PChome stock price fetch failed', {
+      stockCode: code,
+      errorCode: err.code ?? null,
+      errorMessage: err.message,
+      upstreamStatus: err.response?.status ?? upstreamStatus,
+      corpNameMatched,
+    });
     throw new CustomError(404, '抓取失敗');
   }
 }
